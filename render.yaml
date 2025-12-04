@@ -2,7 +2,7 @@ services:
   - type: web
     name: payment-gateway-integration
     env: node
-    buildCommand: npm install && npm run build
+    buildCommand: pnpm install && pnpm run build
     startCommand: node server.js
     staticPublishPath: ./dist/spa
     envVars:
