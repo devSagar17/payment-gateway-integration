@@ -128,6 +128,9 @@ app.post('/api/payments/verify', async (req, res) => {
 // Serve static files with proper MIME types
 const distPath = path.join(__dirname, 'dist', 'spa');
 
+// Log the dist path for debugging
+console.log('Serving static files from:', distPath);
+
 // Custom static file serving with explicit MIME types
 app.get('*\\.(js|css|json|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot|mjs)', (req, res, next) => {
   // Skip API routes
@@ -137,8 +140,12 @@ app.get('*\\.(js|css|json|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot|mjs)', (re
   
   const filePath = path.join(distPath, req.path);
   
+  // Log the file path for debugging
+  console.log('Serving file:', filePath);
+  
   // Check if file exists
   if (!fs.existsSync(filePath)) {
+    console.log('File not found:', filePath);
     return next();
   }
   
@@ -163,11 +170,13 @@ app.get('*\\.(js|css|json|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot|mjs)', (re
   
   if (mimeTypes[ext]) {
     res.setHeader('Content-Type', mimeTypes[ext]);
+    console.log('Setting MIME type for', ext, 'to', mimeTypes[ext]);
   }
   
   // Serve the file
   res.sendFile(filePath, (err) => {
     if (err) {
+      console.error('Error serving file:', err);
       next(err);
     }
   });
