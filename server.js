@@ -4,6 +4,7 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const crypto = require('crypto');
+const fs = require('fs');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -127,44 +128,55 @@ app.post('/api/payments/verify', async (req, res) => {
 // Serve static files with proper MIME types
 const distPath = path.join(__dirname, 'dist', 'spa');
 
-// Custom middleware to set correct MIME types - placed BEFORE static middleware
-app.use((req, res, next) => {
+// Custom static file serving with explicit MIME types
+app.get('*\\.(js|css|json|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot|mjs)', (req, res, next) => {
   // Skip API routes
   if (req.path.startsWith('/api/') || req.path === '/health') {
     return next();
   }
   
-  // Handle static files with correct MIME types
-  if (req.path.includes('.')) {
-    const ext = path.extname(req.path).toLowerCase();
-    const mimeTypes = {
-      '.js': 'application/javascript',
-      '.mjs': 'application/javascript',
-      '.css': 'text/css',
-      '.json': 'application/json',
-      '.png': 'image/png',
-      '.jpg': 'image/jpeg',
-      '.jpeg': 'image/jpeg',
-      '.gif': 'image/gif',
-      '.svg': 'image/svg+xml',
-      '.ico': 'image/x-icon',
-      '.woff': 'font/woff',
-      '.woff2': 'font/woff2',
-      '.ttf': 'font/ttf',
-      '.eot': 'application/vnd.ms-fontobject'
-    };
-    
-    if (mimeTypes[ext]) {
-      res.setHeader('Content-Type', mimeTypes[ext]);
-    }
+  const filePath = path.join(distPath, req.path);
+  
+  // Check if file exists
+  if (!fs.existsSync(filePath)) {
+    return next();
   }
-  next();
+  
+  // Set proper MIME type based on file extension
+  const ext = path.extname(filePath).toLowerCase();
+  const mimeTypes = {
+    '.js': 'application/javascript',
+    '.mjs': 'application/javascript',
+    '.css': 'text/css',
+    '.json': 'application/json',
+    '.png': 'image/png',
+    '.jpg': 'image/jpeg',
+    '.jpeg': 'image/jpeg',
+    '.gif': 'image/gif',
+    '.svg': 'image/svg+xml',
+    '.ico': 'image/x-icon',
+    '.woff': 'font/woff',
+    '.woff2': 'font/woff2',
+    '.ttf': 'font/ttf',
+    '.eot': 'application/vnd.ms-fontobject'
+  };
+  
+  if (mimeTypes[ext]) {
+    res.setHeader('Content-Type', mimeTypes[ext]);
+  }
+  
+  // Serve the file
+  res.sendFile(filePath, (err) => {
+    if (err) {
+      next(err);
+    }
+  });
 });
 
-// Serve static files
+// Serve static files for other assets
 app.use(express.static(distPath));
 
-// Handle React Router - MUST be after static middleware
+// Handle React Router
 app.get('*', (req, res) => {
   // Don't serve index.html for API routes
   if (req.path.startsWith('/api/') || req.path === '/health') {
