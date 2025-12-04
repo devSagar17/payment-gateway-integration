@@ -127,8 +127,13 @@ app.post('/api/payments/verify', async (req, res) => {
 // Serve static files with proper MIME types
 const distPath = path.join(__dirname, 'dist', 'spa');
 
-// Custom middleware to set correct MIME types
+// Custom middleware to set correct MIME types - placed BEFORE static middleware
 app.use((req, res, next) => {
+  // Skip API routes
+  if (req.path.startsWith('/api/') || req.path === '/health') {
+    return next();
+  }
+  
   // Handle static files with correct MIME types
   if (req.path.includes('.')) {
     const ext = path.extname(req.path).toLowerCase();
@@ -159,7 +164,7 @@ app.use((req, res, next) => {
 // Serve static files
 app.use(express.static(distPath));
 
-// Handle React Router
+// Handle React Router - MUST be after static middleware
 app.get('*', (req, res) => {
   // Don't serve index.html for API routes
   if (req.path.startsWith('/api/') || req.path === '/health') {
