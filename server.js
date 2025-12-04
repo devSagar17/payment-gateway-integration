@@ -126,17 +126,38 @@ app.post('/api/payments/verify', async (req, res) => {
 
 // Serve static files with proper MIME types
 const distPath = path.join(__dirname, 'dist', 'spa');
-app.use(express.static(distPath, {
-  setHeaders: (res, path) => {
-    if (path.endsWith('.js')) {
-      res.setHeader('Content-Type', 'application/javascript');
-    } else if (path.endsWith('.css')) {
-      res.setHeader('Content-Type', 'text/css');
-    } else if (path.endsWith('.json')) {
-      res.setHeader('Content-Type', 'application/json');
+
+// Custom middleware to set correct MIME types
+app.use((req, res, next) => {
+  // Handle static files with correct MIME types
+  if (req.path.includes('.')) {
+    const ext = path.extname(req.path).toLowerCase();
+    const mimeTypes = {
+      '.js': 'application/javascript',
+      '.mjs': 'application/javascript',
+      '.css': 'text/css',
+      '.json': 'application/json',
+      '.png': 'image/png',
+      '.jpg': 'image/jpeg',
+      '.jpeg': 'image/jpeg',
+      '.gif': 'image/gif',
+      '.svg': 'image/svg+xml',
+      '.ico': 'image/x-icon',
+      '.woff': 'font/woff',
+      '.woff2': 'font/woff2',
+      '.ttf': 'font/ttf',
+      '.eot': 'application/vnd.ms-fontobject'
+    };
+    
+    if (mimeTypes[ext]) {
+      res.setHeader('Content-Type', mimeTypes[ext]);
     }
   }
-}));
+  next();
+});
+
+// Serve static files
+app.use(express.static(distPath));
 
 // Handle React Router
 app.get('*', (req, res) => {
