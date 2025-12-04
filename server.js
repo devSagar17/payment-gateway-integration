@@ -124,9 +124,19 @@ app.post('/api/payments/verify', async (req, res) => {
   }
 });
 
-// Serve static files
+// Serve static files with proper MIME types
 const distPath = path.join(__dirname, 'dist', 'spa');
-app.use(express.static(distPath));
+app.use(express.static(distPath, {
+  setHeaders: (res, path) => {
+    if (path.endsWith('.js')) {
+      res.setHeader('Content-Type', 'application/javascript');
+    } else if (path.endsWith('.css')) {
+      res.setHeader('Content-Type', 'text/css');
+    } else if (path.endsWith('.json')) {
+      res.setHeader('Content-Type', 'application/json');
+    }
+  }
+}));
 
 // Handle React Router
 app.get('*', (req, res) => {
