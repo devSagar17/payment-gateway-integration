@@ -1,5 +1,5 @@
 import type { RequestHandler } from "express";
-import crypto from "node:crypto";
+import crypto from "crypto";
 
 function assertEnv() {
   const RZP_KEY_ID = process.env.RAZORPAY_KEY_ID ?? "";
