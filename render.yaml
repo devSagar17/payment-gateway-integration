@@ -1,9 +1,10 @@
 services:
   - type: web
-    name: razorpay-payment-gateway
+    name: payment-gateway-integration
     env: node
     buildCommand: npm install && npm run build
-    startCommand: npm start
+    startCommand: node server.js
+    staticPublishPath: ./dist/spa
     envVars:
       - key: NODE_ENV
         value: production
